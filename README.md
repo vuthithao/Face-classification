@@ -21,6 +21,7 @@ python inference.py --path image.jpg
 Classes : 103
 Dataset: train=515, test=257
 Accuracy: train=98.252, test=92.218
+Time estimates: 0.26s/frame
 Threshold unknown: 0.6
 ```
 
