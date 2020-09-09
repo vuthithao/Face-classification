@@ -5,7 +5,7 @@ from mtcnn.mtcnn import MTCNN
 mtcnn = MTCNN()
 
 # load train dataset
-trainX, trainy = load_dataset(mtcnn, 'data/train/')
+trainX, trainy = load_dataset(mtcnn, 'data/update/')
 print(trainX.shape, trainy.shape)
 
 # load tfl model
@@ -18,5 +18,12 @@ for face_pixels in trainX:
   embedding = predict(model, face_pixels)
   newTrainX.append(embedding)
 newTrainX = asarray(newTrainX)
+
+trainX_old = np.load('data/train_embs.npy')
+trainy_old = np.load('data/train_y.npy')
+
+newTrainX = np.concatenate((trainX_old, newTrainX), axis=0)
+trainy = np.concatenate((trainy_old, trainy), axis=0)
+
 np.save("data/train_embs.npy", newTrainX)
 np.save("data/train_y.npy", trainy)

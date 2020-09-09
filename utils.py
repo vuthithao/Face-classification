@@ -5,6 +5,7 @@ from os.path import isdir
 from numpy import asarray
 import tensorflow as tf
 
+
 def read_image(file):
   img = cv2.imread(file)
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -25,25 +26,28 @@ def crop_bb(image, detection, margin):
     return image[y1:y1+h, x1:x1+w]
 
 def crop(mtcnn, img):
-  det = mtcnn.detect_faces(img)[0]
-  margin = int(0.1 * img.shape[0])
-  ret = crop_bb(img, det, margin)
-  return ret
+  det = mtcnn.detect_faces(img)
+  ret = []
+  boxes = []
+  for i in det:
+      margin = int(0.1 * img.shape[0])
+      ret.append(crop_bb(img, i, margin))
+      boxes.append(i['box'])
+  return ret, boxes
 
 
 def pre_process(mtcnn, face, required_size=(160, 160)):
-    # face = crop(mtcnn, face)
-    face = mtcnn(face)
-    face = face.permute(1, 2, 0).int().numpy()
-    # print(face.shape)
-    ret = cv2.resize(face, required_size)
-    # ret = cv2.cvtColor(ret, cv2.COLOR_BGR2RGB)
-    ret = ret.astype('float32')
-    # standardize pixel values across channels (global)
-    mean, std = ret.mean(), ret.std()
-    ret = (ret - mean) / std
+    face, boxes = crop(mtcnn, face)
+    rets = [cv2.resize(i, required_size) for i in face]
+    re = []
+    for ret in rets:
+        ret = ret.astype('float32')
+        # standardize pixel values across channels (global)
+        mean, std = ret.mean(), ret.std()
+        ret = (ret - mean) / std
+        re.append(ret)
+    return re, boxes
 
-    return ret
 # load images and extract faces for all images in a directory
 def load_faces(mtcnn, directory):
     faces = list()
@@ -53,7 +57,8 @@ def load_faces(mtcnn, directory):
         i += 1
         path = directory + filename
         img = read_image(path)
-        face = pre_process(mtcnn, img)
+        face, _ = pre_process(mtcnn, img)
+        face = face[0]
         faces.append(face)
         if i > 4:
             break

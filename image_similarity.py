@@ -1,5 +1,6 @@
 from sklearn.preprocessing import Normalizer
 from utils import *
+from argparse import ArgumentParser
 
 from mtcnn.mtcnn import MTCNN
 from scipy.spatial import distance
@@ -25,40 +26,39 @@ def check(img, trainX, trainy):
         color = (0, 0, 255)
         cv2.putText(img2, result, (int(boxes[i][0] + 5), int(boxes[i][1] - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 1)
     return img2, predict_names
-def checkAndGet(trainX, trainy, con=True):
-    cap = cv2.VideoCapture(0)
-    xxx = time.time()
-    checkk = []
-    while (True):
-        # Capture frame-by-frame
-        ret, frame = cap.read()
-        img, predict_names = check(frame, trainX, trainy)
-        checkk.append(predict_names)
-        # Display the resulting frame
-        cv2.imshow('check', img)
-        unknown = True
-        for a in checkk:
-            if a != 'unknown':
-                unknown = False
-        if time.time() - xxx > 3 and unknown:
-            if predict_names == 'unknown':
-                break
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            con = False
-            break
 
-    cap.release()
-    cv2.destroyAllWindows()
-    if unknown:
+def checkAndGet(trainX=None, trainy=None, con=True):
+    newTrainX = []
+    if trainX is not None:
+        cap = cv2.VideoCapture(0)
+        xxx = time.time()
+        checkk = []
+        while (True):
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            img, predict_names = check(frame, trainX, trainy)
+            checkk.append(predict_names)
+            # Display the resulting frame
+            cv2.imshow('check', img)
+            unknown = True
+            for a in checkk:
+                if a != 'unknown':
+                    unknown = False
+            if time.time() - xxx > 5 and unknown:
+                if predict_names == 'unknown':
+                    break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        con = False
+        cap.release()
+        cv2.destroyAllWindows()
+    else:
         print('Do you want be a part of us? (y/n)')
         x = input()
         if x == 'y':
             print('Enter your name:')
             y = input()
-            if y in list(set(trainy)):
-                print('Choose other name:')
-                y = input()
-            os.mkdir('data/update/' + y)
+            os.mkdir('data/custom/' + y)
 
             for pose in range(len(poses)):
                 start = time.time()
@@ -71,7 +71,7 @@ def checkAndGet(trainX, trainy, con=True):
                     path = 'data/sample/' + poses[pose] + '.jpg'
                     im = cv2.imread(path)
                     img_show [:im.shape[0], :im.shape[1]] = im
-                    cv2.imwrite(os.path.join('data/update', y, poses[pose] + '.jpg'), frame)
+                    cv2.imwrite(os.path.join('data/custom', y, poses[pose] + '.jpg'), frame)
                     cv2.imshow('xxx', img_show)
                     if time.time() - start > 3:
                         break
@@ -82,7 +82,7 @@ def checkAndGet(trainX, trainy, con=True):
                 cv2.destroyAllWindows()
 
             # load train dataset
-            trainX, trainy = load_dataset(mtcnn, 'data/update/')
+            trainX, trainy = load_dataset(mtcnn, 'data/custom/')
             # convert each face in the train set to an embedding
             newTrainX = list()
             for face_pixels in trainX:
@@ -90,18 +90,13 @@ def checkAndGet(trainX, trainy, con=True):
                 newTrainX.append(embedding)
             newTrainX = asarray(newTrainX)
 
-            trainX = np.concatenate((trainX_old, newTrainX), axis=0)
-            trainy = np.concatenate((trainy_old, trainy), axis=0)
-
-            np.save("data/train_embs.npy", trainX)
-            np.save("data/train_y.npy", trainy)
-
-            shutil.move('data/update/' + y, 'data/train/' + y)
+            np.save("data/custom/train_embs.npy", newTrainX)
+            np.save("data/custom/train_y.npy", trainy)
         else:
             con = False
-    return con, trainX, trainy
+    return con, newTrainX, trainy
 
-def run(trainX, trainy):
+def run(trainX=None, trainy=None):
     con, trainX, trainy = checkAndGet(trainX, trainy)
     if con:
         run(trainX, trainy)
@@ -119,13 +114,25 @@ print('Loaded Model')
 
 # normalize input vectors
 in_encoder = Normalizer(norm='l2')
-trainX = np.load('data/train_embs.npy')
-trainy = np.load('data/train_y.npy')
 poses = ['front', '3_4_lelf', '3_4_right', 'from_bellow', 'from_above']
-trainX_old = np.load('data/train_embs.npy')
-trainy_old = np.load('data/train_y.npy')
+
 
 if __name__ == "__main__":
-    run(trainX, trainy)
+
+    print('Do you want reset?: (y/n)')
+    reset = input()
+    if reset == 'y':
+        p = 'data/custom'
+        if os.path.isdir(p):
+            shutil.rmtree(p)
+        os.mkdir(p)
+        run()
+    else:
+        try:
+            trainX = np.load('data/custom/train_embs.npy')
+            trainy = np.load('data/custom/train_y.npy')
+            run(trainX, trainy)
+        except:
+            run()
 
 

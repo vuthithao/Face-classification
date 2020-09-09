@@ -1,4 +1,5 @@
 # Face classification
+![](similarity.png)
 ## Installation
 ```bash
 pip install -r requirements.txt
@@ -13,16 +14,15 @@ pip install -r requirements.txt
 python train.py
 ```
 4. Test
+
+4.1. multi-class classification
 ```
-python inference.py --path image.jpg
+python inference.py
 ```
-## Results
+4.2. Binary classification
+    
 ```
-Classes : 103
-Dataset: train=515, test=257
-Accuracy: train=98.252, test=92.218
-Time estimates: 0.26s/frame
-Threshold unknown: 0.6
+python image_similarity.py
 ```
 
 ## Contributing

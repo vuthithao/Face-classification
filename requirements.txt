@@ -2,5 +2,4 @@ pickle
 scikit-learn
 tensorflow
 opencv-python
-torch==0.6.0
 facenet-pytorch
