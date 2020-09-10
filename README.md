@@ -24,7 +24,7 @@ python inference.py
 ```
 python image_similarity.py
 ```
-example:
+Video demo:
 
 [![Watch the video](https://img.youtube.com/vi/HfN8CFpeV98/1.jpg)](https://youtu.be/HfN8CFpeV98)
 
