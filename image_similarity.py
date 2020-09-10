@@ -53,6 +53,27 @@ def checkAndGet(trainX=None, trainy=None, con=True):
         cap.release()
         cv2.destroyAllWindows()
     else:
+        cap = cv2.VideoCapture(0)
+        xxx = time.time()
+        while (True):
+            ret, img = cap.read()
+            img2 = img.copy()
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            faces, boxes = pre_process(mtcnn, img)
+
+            for i in range(len(boxes)):
+                result = 'unknown'
+                color = (0, 0, 255)
+                cv2.putText(img2, result, (int(boxes[i][0] + 5), int(boxes[i][1] - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            color, 1)
+            cv2.imshow('check', img2)
+            if time.time() - xxx > 5:
+                break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        cap.release()
+        cv2.destroyAllWindows()
+
         print('Do you want be a part of us? (y/n)')
         x = input()
         if x == 'y':

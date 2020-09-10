@@ -24,6 +24,9 @@ python inference.py
 ```
 python image_similarity.py
 ```
+example:
+
+[![Watch the video](https://img.youtube.com/vi/HfN8CFpeV98/1.jpg)](https://youtu.be/HfN8CFpeV98)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
