@@ -20,7 +20,7 @@ def check(img, trainX, trainy):
         distances = [distance.euclidean(embeddings[i], k) for k in trainX]
         class_probability = np.min(distances)
         predict_names = trainy[np.argmin(distances)]
-        if class_probability > 0.6:
+        if class_probability < 0.95:
             predict_names = 'unknown'
         result = predict_names
         color = (0, 0, 255)
